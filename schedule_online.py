@@ -179,7 +179,7 @@ def schedule_post(app_id, app_secret, access_token):
                                                       row[3].value.split(','))  # 假设'內容'在第二列，'圖片列表'在第三列
                     flag = 1
                 except:
-                    pass
+                    logger.error(f"{instagram} {row[4].value}")
 
     if flag == 0:
         logger.info("No post was scheduled.")
