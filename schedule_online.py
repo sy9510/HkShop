@@ -6,8 +6,8 @@ from retrying import retry
 from openpyxl import load_workbook
 import os
 
-from lib.tools import is_image
-
+def is_image(filename):
+    return filename.lower().endswith((".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tif", ".tiff"))
 
 @retry(stop_max_attempt_number=3)
 def safe_request(url, method, session=None, **kwargs):
