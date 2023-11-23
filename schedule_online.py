@@ -6,13 +6,15 @@ from retrying import retry
 from openpyxl import load_workbook
 import os
 
+from lib.tools import is_image
+
 
 @retry(stop_max_attempt_number=3)
 def safe_request(url, method, session=None, **kwargs):
     try:
         if session is None:
             session = requests.session()
-        response = session.request(method, url, **kwargs)
+        response = session.request(method, url, timeout=10, **kwargs)
         # logger.info(response.text)
         response.raise_for_status()
         return response
@@ -89,7 +91,7 @@ class BusinessPost:
         photo_file_list = []
         logger.info("Start to upload images.")
         for filename in os.listdir(photo_path):
-            if filename.endswith(".jpg"):  # 确保只上传JPEG文件
+            if is_image(filename):  # 确保只上传JPEG文件
                 image_path = os.path.join(photo_path, filename)
                 photo_file_list.append(image_path)
         logger.info(f"Total {len(photo_file_list)} images were found.")
@@ -172,9 +174,12 @@ def schedule_post(app_id, app_secret, access_token):
             # 判断是否为instagram账号
             instagram_list = set([col.strip() for col in row[1].value.split(',')])
             for instagram in list(business_post_instagram_list.intersection(instagram_list)):
-                business_post.post_instagram_page(instagram, row[2].value,
-                                                  row[3].value.split(','))  # 假设'內容'在第二列，'圖片列表'在第三列
-                flag = 1
+                try:
+                    business_post.post_instagram_page(instagram, row[4].value,
+                                                      row[3].value.split(','))  # 假设'內容'在第二列，'圖片列表'在第三列
+                    flag = 1
+                except:
+                    pass
 
     if flag == 0:
         logger.info("No post was scheduled.")
